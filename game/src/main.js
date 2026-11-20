@@ -200,12 +200,17 @@ function applyShot() {
   setMissionMarker();
   if (d.dlg) { $('dialog').classList.remove('hidden'); $('dlgPort').textContent = d.dlg.who[0]; $('dlgWho').textContent = `${d.dlg.who} • ${d.dlg.role}`; $('dlgText').textContent = d.dlg.text; }
   if (d.popup) popup(d.popup);
-  if (d.targets) { S.targetsDown = 3 - d.targets; enemies.forEach((e, i) => { if (i < S.targetsDown) { e.userData.alive = false; e.rotation.x = -Math.PI / 2; e.position.y = 0.3; e.userData.hpBar.scale.x = 0.02; } }); }
+  if (d.targets) { S.targetsDown = 3 - d.targets; enemies.forEach((e, i) => { if (i < S.targetsDown) { e.userData.alive = false; e.rotation.x = -0.9; e.userData.hpBar.scale.x = 0.08; e.userData.hpBar.material.color.setHex(0xff3b30); } }); }
   if (SHOT === 'start') {
     car.position.set(-60, 0, 60); car.rotation.y = Math.PI; heading = Math.PI; S.inCar = true; player.visible = false;
   } else if (SHOT === 'play') {
     car.position.set(-60, 0, 220); car.rotation.y = Math.PI; heading = Math.PI; S.inCar = true; player.visible = false;
     spawnPolice(); heli.visible = true;
+    // Stage 4 traffic cars ahead on the beach road / Ocean Ave so 3+ read in frame.
+    traffic[0].position.set(-58, 0, 192); traffic[0].rotation.y = Math.PI;
+    traffic[1].position.set(-63, 0, 168); traffic[1].rotation.y = Math.PI;
+    traffic[2].position.set(-57, 0, 150); traffic[2].rotation.y = Math.PI;
+    traffic[3].position.set(-57, 0, 120); traffic[3].rotation.y = Math.PI;
   } else if (SHOT === 'chase') {
     car.position.set(-60, 0, -260); car.rotation.y = Math.PI; heading = Math.PI; S.inCar = true; player.visible = false;
     spawnPolice(); heli.visible = true;
@@ -216,8 +221,16 @@ function applyShot() {
     S.inCar = false; player.visible = true; car.visible = false;
     markerDisc.visible = false; markerBeam.visible = false;
     player.position.set(140, 0, 154); playerHeading = Math.PI; player.rotation.y = playerHeading;
-    enemies[0].position.set(131, 0, 143); enemies[1].position.set(140, 0, 141); enemies[2].position.set(149, 0, 143);
+    // Hide the loose 2x2 crates for the staged frame: they occlude the yard
+    // enemies. Containers + fencing still prove the yard; live game keeps crates.
+    world.yard.traverse((o) => { if (o.isMesh && o.geometry && o.geometry.parameters && o.geometry.parameters.width === 2 && o.geometry.parameters.height === 2) o.visible = false; });
+    // Enemies in the open centre strip, spread wide, none behind a crate/container.
+    enemies[0].position.set(130, 0, 147); enemies[1].position.set(140, 0, 145); enemies[2].position.set(150, 0, 147);
     enemies.forEach((e) => { e.rotation.y = 0; });
+    // Muzzle flash held visible for the staged frame; pistol in hand.
+    player.userData.flash.material.opacity = 1;
+    // Marlo dialogue docked bottom-LEFT so it never covers the player.
+    const dlg = $('dialog'); dlg.style.left = '16px'; dlg.style.transform = 'none'; dlg.style.bottom = '150px'; dlg.style.maxWidth = '430px';
     $('cross').classList.remove('hidden');
   } else if (SHOT === 'end') {
     car.position.set(-60, 0, -440); car.rotation.y = Math.PI; heading = Math.PI; S.inCar = false;
@@ -265,8 +278,9 @@ function updateHud() {
   if (rows.length > 0) {
     $('police').classList.remove('hidden');
     $('policeRows').innerHTML = rows.map(r => `<div class="row"><span><b>${r.call}</b></span><span>${r.d}m • ${r.st}</span></div>`).join('');
-    $('policeLine').textContent = S.wanted === 0 ? 'POLICE: CLEAR' : S.wanted >= 3 ? 'POLICE: IN SIGHT' : 'POLICE: PURSUIT';
-  } else { $('police').classList.add('hidden'); $('policeLine').textContent = 'POLICE: CLEAR'; }
+  } else { $('police').classList.add('hidden'); }
+  // Police line always follows the wanted level, even with no unit rows (shot 4).
+  $('policeLine').textContent = S.wanted === 0 ? 'POLICE: CLEAR' : S.wanted >= 3 ? 'POLICE: IN SIGHT' : 'POLICE: PURSUIT';
   $('speed').innerHTML = `${Math.round(S.speedKmh)} <small>km/h</small>`;
   $('fuelPct').textContent = Math.round(S.fuel) + '%'; $('fuelFill').style.width = S.fuel + '%';
   $('condPct').textContent = Math.round(S.cond) + '%'; $('condFill').style.width = S.cond + '%';
@@ -322,13 +336,20 @@ function stepPolice(dt) {
     if (d < 4.5 && S.inCar) { S.cond = Math.max(30, S.cond - 0.4); car.position.x += Math.sin(p.userData.heading) * 0.4; }
   }
   if (heli.visible) {
-    const a = S.playT * 0.22 + (shotDef ? -1.05 : 0);
-    const hy = shotDef ? 20 : 42;
-    heli.position.set(tgt.x + Math.cos(a) * 42, hy, tgt.z + Math.sin(a) * 42);
+    // Staged shots: heli pinned over the road ahead of the car, low enough
+    // that the full rotor disc stays inside the frame, cone landing on the road.
+    const ho = shotDef && shotDef.heliOff;
+    const a = ho ? 0 : S.playT * 0.22 - 1.05;
+    const hy = ho ? ho.dy : 42;
+    const hx = ho ? tgt.x + ho.dx : tgt.x + Math.cos(a) * 42;
+    const hz = ho ? tgt.z + ho.dz : tgt.z + Math.sin(a) * 42;
+    heli.position.set(hx, hy, hz);
     heli.lookAt(tgt.x, 0, tgt.z);
     heli.userData.rotor.rotation.y += dt * 22;
     heli.userData.tailRotor.rotation.z += dt * 30;
+    // Cone spans exactly heli -> ground: apex just under the heli, base on the road.
     heli.userData.cone.scale.y = hy / 42;
+    heli.userData.cone.position.y = -hy / 2;
     heli.userData.pool.position.y = -hy + 0.5;
   }
 }
@@ -345,6 +366,7 @@ function stepWorld(dt, t) {
   markerDisc.scale.setScalar(1 + Math.sin(t * 3) * 0.12);
   markerBeam.material.opacity = 0.24 + Math.sin(t * 3) * 0.08;
   for (const tr of traffic) {
+    if (shotDef) continue; // staged frames: traffic holds its staged positions
     tr.position.z += tr.userData.dir * tr.userData.speed * dt;
     if (tr.position.z > 570) tr.position.z = -570; if (tr.position.z < -570) tr.position.z = 570;
   }
@@ -367,7 +389,7 @@ function stepWorld(dt, t) {
     const d = dist2d(e.position, player.position);
     if (d < 30 && d > 3) { const a = Math.atan2(player.position.x - e.position.x, player.position.z - e.position.z); e.position.x += Math.sin(a) * 1.6 * dt; e.position.z += Math.cos(a) * 1.6 * dt; e.rotation.y = a; }
   }
-  player.userData.flash.material.opacity = Math.max(0, player.userData.flash.material.opacity - dt * 6);
+  if (!shotDef) player.userData.flash.material.opacity = Math.max(0, player.userData.flash.material.opacity - dt * 6);
 }
 function stepDrive(dt) {
   if (!S.started || S.paused) return;
@@ -458,25 +480,33 @@ function stepCamera(dt) {
   const base = S.inCar ? heading : playerHeading;
   let off, look;
   if (SHOT === 'start') {
-    // WIDE HIGH establishing: whole beachfront, ferris wheel framed.
-    camera.position.set(-190, 55, 30);
-    camera.lookAt(-60, 4, 90); return;
+    // HIGH over the beach looking south-west along the coast: ocean + sunset
+    // over the water on the left, ferris wheel + hero car on the boardwalk.
+    // Closer/lower than v10 so the hero car reads instead of being a speck.
+    camera.position.set(-45, 28, -5);
+    camera.lookAt(-105, 2, 95); return;
   }
   if (SHOT === 'chase') {
-    off = new THREE.Vector3(Math.sin(base + 0.55) * -9.5, 4.6, Math.cos(base + 0.55) * -9.5);
-    camera.position.copy(tgt).add(off); camera.lookAt(tgt.x, 3, tgt.z - 24); return;
+    // WIDER + HIGHER pursuit cam, look point close behind the car so the hero
+    // car sits fully inside the frame instead of half-cut at the bottom edge.
+    off = new THREE.Vector3(Math.sin(base + 0.55) * -11.5, 5.6, Math.cos(base + 0.55) * -11.5);
+    camera.position.copy(tgt).add(off); camera.lookAt(tgt.x, 2.2, tgt.z - 12); return;
   }
   if (SHOT === 'mission') {
-    camera.position.set(138.5, 4.2, 161.5);
-    camera.lookAt(140, 1.2, 143); return;
+    // HIGH STEEP on-foot cam from inside the yard, above the container ring:
+    // sight lines to all 3 enemies pass OVER the low containers (tops 2.6/5.2).
+    // Pulled back to z=166 so the player (z=154) stays inside the frame.
+    camera.position.set(140, 8, 166);
+    camera.lookAt(140, 1.2, 146); return;
   }
   if (SHOT === 'end') {
     camera.position.set(-46, 4.2, -420);
     camera.lookAt(-95, 6, -462); return;
   }
-  // Default low rear 3/4 chase cam: 6.5 m behind, 2.7 m up, 2.3 m to the side.
-  const side = 2.3;
-  off = new THREE.Vector3(-Math.sin(base) * 6.5 + Math.cos(base) * side, 2.7, -Math.cos(base) * 6.5 - Math.sin(base) * side);
+  // Low rear 3/4 chase cam: 7.5 m behind, 3.1 m up, 3.6 m to the side —
+  // wide enough to read the flank, sloped hood and glass, not a flat red block.
+  const side = 3.6;
+  off = new THREE.Vector3(-Math.sin(base) * 7.5 + Math.cos(base) * side, 3.1, -Math.cos(base) * 7.5 - Math.sin(base) * side);
   const want = new THREE.Vector3().copy(tgt).add(off);
   if (!camera.userData.snapped || shotDef) camera.position.copy(want);
   else camera.position.lerp(want, 1 - Math.pow(0.001, dt));

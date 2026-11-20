@@ -31,12 +31,12 @@ export const LOOP_TOTAL = 22450; // 19750 story + 1250 start + 450 yard bounties
 export const SHOTS = {
   start:   { job: 1, cash: 1250,  rep: 0, done: 0, wanted: 0, elapsed: 47,  par: '1:00', speed: 128, heli: false, police: [], dlg: null,
              cam: 'wide',  note: 'WIDE HIGH establishing, beachfront + ferris wheel' },
-  play:    { job: 2, cash: 3750,  rep: 1, done: 1, wanted: 0, elapsed: 72,  par: '1:30', speed: 141, heli: true,  police: [
+  play:    { job: 2, cash: 3750,  rep: 1, done: 1, wanted: 0, elapsed: 72,  par: '1:30', speed: 141, heli: true,  heliOff: { dx: -8, dy: 13, dz: -40 }, police: [
                { call: 'SNOOK-12', d: 6,  st: 'RAMMING' }, { call: 'SNOOK-11', d: 14, st: 'PURSUIT' },
                { call: 'SNOOK-13', d: 38, st: 'RESPONDING' }, { call: 'AIR-1 SKY-1', d: 42, st: 'SPOTLIGHT' }],
              dlg: { who: 'RAE', role: 'FIXER', text: 'Package is sealed and hot. Beach road, keep it above a hundred — I will talk you through the handoff.' },
              cam: 'chase', note: 'LOW rear 3/4 chase cam, beach road' },
-  chase:   { job: 5, cash: 13200, rep: 5, done: 4, wanted: 3, elapsed: 129, par: '2:30', speed: 152, heli: true,  police: [
+  chase:   { job: 5, cash: 13200, rep: 5, done: 4, wanted: 3, elapsed: 129, par: '2:30', speed: 152, heli: true,  heliOff: { dx: -6, dy: 14, dz: -38 }, police: [
                { call: 'SNOOK-12', d: 6,  st: 'RAMMING' }, { call: 'SNOOK-11', d: 14, st: 'PURSUIT' },
                { call: 'SNOOK-13', d: 38, st: 'RESPONDING' }, { call: 'SNOOK-14', d: 55, st: 'ROADBLOCK' },
                { call: 'AIR-1 SKY-1', d: 42, st: 'SPOTLIGHT' }],

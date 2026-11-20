@@ -134,12 +134,13 @@ export function makeHeli() {
     const skid = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 5.5, 6), trimMat);
     skid.rotation.x = Math.PI / 2; skid.position.set(s * 1.2, -1.35, 0); heli.add(skid);
   }
-  // Spotlight cone + light pool on the road.
-  const coneMat = new THREE.MeshBasicMaterial({ color: 0xfff6c0, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false });
-  const cone = new THREE.Mesh(new THREE.ConeGeometry(9, 42, 20, 1, true), coneMat);
+  // Spotlight cone + light pool on the road. Cone is narrow and bright enough
+  // to read as a volume against the sunset sky; pool lands on the road.
+  const coneMat = new THREE.MeshBasicMaterial({ color: 0xfff6c0, transparent: true, opacity: 0.34, side: THREE.DoubleSide, depthWrite: false });
+  const cone = new THREE.Mesh(new THREE.ConeGeometry(6, 42, 20, 1, true), coneMat);
   cone.position.y = -22; heli.add(cone); heli.userData.cone = cone;
-  const pool = new THREE.Mesh(new THREE.CircleGeometry(8, 24),
-    new THREE.MeshBasicMaterial({ color: 0xfff2a0, transparent: true, opacity: 0.3, depthWrite: false }));
+  const pool = new THREE.Mesh(new THREE.CircleGeometry(7, 24),
+    new THREE.MeshBasicMaterial({ color: 0xfff2a0, transparent: true, opacity: 0.5, depthWrite: false }));
   pool.rotation.x = -Math.PI / 2; pool.position.y = -41.5; heli.add(pool); heli.userData.pool = pool;
   heli.scale.set(1.6, 1.6, 1.6);
   return heli;
@@ -165,20 +166,22 @@ export function makePlayer() {
     const leg = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.8, 0.2), legs);
     leg.position.set(s * 0.16, 0.45, 0); g.add(leg); g.userData.limbs.push(leg);
   }
-  // Pistol held forward in the right hand — visible from the shot camera.
+  // Pistol held forward in the right hand — LARGE, visible from the shot camera.
   const gun = new THREE.Group();
-  const barrel = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.13, 0.62),
-    new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.8, roughness: 0.35 }));
+  const barrel = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.18, 0.85),
+    new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.8, roughness: 0.35 }));
   gun.add(barrel);
-  const grip = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.3, 0.13),
+  const grip = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.36, 0.16),
     new THREE.MeshStandardMaterial({ color: 0x333333 }));
-  grip.position.set(0, -0.16, -0.16); gun.add(grip);
-  gun.position.set(0.52, 1.3, 0.5); gun.rotation.x = -0.15; gun.rotation.y = -0.35; g.add(gun);
+  grip.position.set(0, -0.18, -0.2); gun.add(grip);
+  gun.position.set(0.55, 1.32, 0.55); gun.rotation.x = -0.15; gun.rotation.y = -0.35; g.add(gun);
   g.userData.gun = gun;
-  // Muzzle flash sprite (hidden until fired).
-  const flash = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.5),
+  // Muzzle flash sprite (hidden until fired; staged shots hold it visible).
+  // Small diamond so it reads as a burst, not a flat square.
+  const flash = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.7),
     new THREE.MeshBasicMaterial({ color: 0xffe27a, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }));
-  flash.position.set(0.42, 1.3, 0.75); g.add(flash); g.userData.flash = flash;
+  flash.rotation.z = 0.6;
+  flash.position.set(0.55, 1.35, 1.05); g.add(flash); g.userData.flash = flash;
   return g;
 }
 
@@ -195,11 +198,11 @@ export function makeEnemy() {
       new THREE.MeshStandardMaterial({ color: 0x2a2a2a }));
     leg.position.set(s * 0.15, 0.42, 0); g.add(leg);
   }
-  // Health bar above the head (sprite pair).
-  const bg = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.12), new THREE.MeshBasicMaterial({ color: 0x330000, depthWrite: false }));
-  bg.position.y = 2.25; g.add(bg);
-  const fg = new THREE.Mesh(new THREE.PlaneGeometry(1.06, 0.08), new THREE.MeshBasicMaterial({ color: 0x3ddc5a, depthWrite: false }));
-  fg.position.set(0, 2.25, 0.01); g.add(fg); g.userData.hpBar = fg;
+  // Health bar above the head (sprite pair) — large enough to read at shot distance.
+  const bg = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 0.16), new THREE.MeshBasicMaterial({ color: 0x330000, depthWrite: false }));
+  bg.position.y = 2.3; g.add(bg);
+  const fg = new THREE.Mesh(new THREE.PlaneGeometry(1.36, 0.11), new THREE.MeshBasicMaterial({ color: 0x3ddc5a, depthWrite: false }));
+  fg.position.set(0, 2.3, 0.01); g.add(fg); g.userData.hpBar = fg;
   g.userData.hp = 100;
   return g;
 }
