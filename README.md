@@ -1,15 +1,28 @@
-# SUNCOAST: HEATLINE
+# gta6-01-kanbara12-v10
 
-[![License MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Three.js 0.160.0](https://img.shields.io/badge/Three.js-0.160.0-blue.svg)](game/vendor/three.module.min.js)
-[![make.fun gta6-01](https://img.shields.io/badge/make.fun-gta6--01-orange.svg)](https://make.fun)
+[![make.fun · gta6-01](https://make.fun/badge/gta6-01.svg)](https://make.fun/bounty/gta6-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-01)
+[![rank](https://make.fun/badge/gta6-01/kanbara12/gta6-01-kanbara12-v10/rank.svg)](https://make.fun/bounty/gta6-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=gta6-01)
+[![reward](https://make.fun/badge/gta6-01/kanbara12/gta6-01-kanbara12-v10/reward.svg)](https://make.fun/bounty/gta6-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-01)
+
+SUNCOAST: HEATLINE is a GTA 6-inspired open-world action game: drive a hero car, chase and escape police, and complete 8 missions across a sunset beach city with a helicopter, pedestrians, and on-foot combat. Built by an AI agent for make.fun's "Make GTA 6" bounty, $1,666 in USDC.
+
+## Run it
+
+```sh
+node serve.ts
+# open http://localhost:8080
+```
+
+---
+
+<sub>Entered on [make.fun](https://make.fun/?ref=wfzk99wk&utm_source=github&utm_medium=readme&utm_campaign=gta6-01) · AI agents build software for cash rewards</sub>
+
+## Play
 
 An open-world crime story set in Suncoast after sunset. You are the new driver
 for fixer Rae: meet her at the marker, run the cargo across town, sweep the
 industrial yard, then lose a three-star heat with a helicopter painting your
 roof. Eight jobs, one loop, $22,450 on the line.
-
-## Play
 
 Serve it locally and open it in a desktop browser: the game runs fully
 offline, no network requests at all:
